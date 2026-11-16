@@ -1,0 +1,512 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Для Дашечки ♥</title>
+<style>
+  /* ---------- БАЗА ---------- */
+  * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+  :root {
+    --pink-bg: #ffe4ef;
+    --pink-deep: #ff9ec4;
+    --pink-soft: #ffd1e3;
+    --red: #e63950;
+    --text: #7a2c46;
+  }
+
+  html, body {
+    height: 100%;
+    overflow: hidden;
+  }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    background: linear-gradient(160deg, #ffe4ef 0%, #ffc9de 50%, #ffb3d1 100%);
+    color: var(--text);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    position: relative;
+  }
+
+  /* ---------- ПЛАВАЮЩИЕ СЕРДЕЧКИ НА ФОНЕ ---------- */
+  .bg-heart {
+    position: fixed;
+    pointer-events: none;
+    opacity: 0.35;
+    font-size: 22px;
+    animation: floatUp linear infinite;
+    z-index: 0;
+    will-change: transform;
+  }
+  @keyframes floatUp {
+    0%   { transform: translateY(110vh) scale(0.7) rotate(0deg); opacity: 0; }
+    10%  { opacity: 0.35; }
+    90%  { opacity: 0.35; }
+    100% { transform: translateY(-15vh) scale(1.1) rotate(25deg); opacity: 0; }
+  }
+
+  /* ---------- ЭКРАНЫ ---------- */
+  .screen {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+    text-align: center;
+    z-index: 1;
+    opacity: 0;
+    pointer-events: none;
+    transform: scale(0.94) translateY(14px);
+    transition: opacity 0.55s cubic-bezier(.22,.61,.36,1),
+                transform 0.55s cubic-bezier(.22,.61,.36,1);
+  }
+  .screen.active {
+    opacity: 1;
+    pointer-events: auto;
+    transform: scale(1) translateY(0);
+  }
+  .screen.leaving {
+    opacity: 0;
+    transform: scale(1.06) translateY(-14px);
+  }
+
+  /* ---------- ДИАЛОГОВОЕ ОКНО ---------- */
+  .dialog-title {
+    font-size: clamp(20px, 6vw, 28px);
+    font-weight: 700;
+    color: #c2406a;
+    margin-bottom: 22px;
+    letter-spacing: 0.5px;
+    animation: popIn 0.5s cubic-bezier(.34,1.56,.64,1) both;
+  }
+
+  .dialog-box {
+    background: rgba(255, 255, 255, 0.75);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    border: 1px solid rgba(255,255,255,0.9);
+    border-radius: 24px;
+    box-shadow: 0 18px 40px rgba(200, 80, 130, 0.18);
+    padding: 26px 22px;
+    width: 100%;
+    max-width: 400px;
+    animation: popIn 0.6s 0.1s cubic-bezier(.34,1.56,.64,1) both;
+  }
+
+  .dialog-text {
+    font-size: clamp(16px, 4.5vw, 19px);
+    font-weight: 600;
+    margin-bottom: 18px;
+  }
+
+  .btn-choice {
+    display: block;
+    width: 100%;
+    margin-top: 12px;
+    padding: 15px 18px;
+    border: none;
+    border-radius: 18px;
+    font-size: clamp(15px, 4.3vw, 17px);
+    font-weight: 600;
+    font-family: inherit;
+    color: #fff;
+    background: linear-gradient(135deg, #ff8fb8, #ff6fa0);
+    box-shadow: 0 8px 18px rgba(255, 111, 160, 0.35);
+    cursor: pointer;
+    transition: transform 0.18s ease, box-shadow 0.18s ease, filter 0.18s ease;
+  }
+  .btn-choice:active {
+    transform: scale(0.96);
+    box-shadow: 0 4px 10px rgba(255, 111, 160, 0.3);
+    filter: brightness(0.97);
+  }
+
+  /* ---------- КРАСНЫЙ ЭКРАН ---------- */
+  .red-screen {
+    position: fixed;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background: #e63950;
+    color: #fff;
+    z-index: 50;
+    opacity: 0;
+    pointer-events: none;
+    transform: scale(1.08);
+    transition: opacity 0.5s ease, transform 0.5s ease;
+  }
+  .red-screen.active {
+    opacity: 1;
+    pointer-events: auto;
+    transform: scale(1);
+  }
+  .red-screen .msg {
+    font-size: clamp(26px, 8vw, 40px);
+    font-weight: 800;
+    text-align: center;
+    padding: 0 24px;
+    animation: popIn 0.6s cubic-bezier(.34,1.56,.64,1) both;
+  }
+  .broken-heart {
+    font-size: clamp(60px, 20vw, 90px);
+    margin-top: 22px;
+    opacity: 0;
+    transform: scale(0.6) rotate(-15deg);
+    transition: opacity 0.9s ease, transform 0.9s cubic-bezier(.34,1.56,.64,1);
+  }
+  .broken-heart.show {
+    opacity: 1;
+    transform: scale(1) rotate(0deg);
+  }
+  .red-screen .btn-back {
+    margin-top: 36px;
+    padding: 12px 26px;
+    border-radius: 999px;
+    border: 2px solid rgba(255,255,255,0.8);
+    background: transparent;
+    color: #fff;
+    font-size: 15px;
+    font-weight: 600;
+    font-family: inherit;
+    cursor: pointer;
+    opacity: 0;
+    transition: opacity 0.6s ease 0.4s, transform 0.18s ease;
+  }
+  .red-screen .btn-back.show { opacity: 1; }
+  .red-screen .btn-back:active { transform: scale(0.95); }
+
+  /* ---------- ВВОД ОТВЕТА ---------- */
+  .answer-input {
+    width: 100%;
+    padding: 15px 18px;
+    border-radius: 18px;
+    border: 2px solid rgba(255, 158, 196, 0.6);
+    background: rgba(255,255,255,0.9);
+    font-size: 16px;
+    font-family: inherit;
+    color: var(--text);
+    outline: none;
+    text-align: center;
+    transition: border-color 0.25s ease, box-shadow 0.25s ease;
+  }
+  .answer-input:focus {
+    border-color: #ff6fa0;
+    box-shadow: 0 0 0 4px rgba(255, 111, 160, 0.18);
+  }
+
+  /* ---------- ЦВЕТОЧКИ-КНОПКА ---------- */
+  .flower-btn {
+    border: none;
+    background: transparent;
+    cursor: pointer;
+    padding: 0;
+    animation: bob 2.6s ease-in-out infinite;
+    transition: transform 0.2s ease;
+    display: inline-block;
+  }
+  .flower-btn img {
+    width: clamp(180px, 55vw, 260px);
+    height: auto;
+    display: block;
+    filter: drop-shadow(0 14px 24px rgba(200, 80, 130, 0.3));
+    border-radius: 20px;
+  }
+  .flower-btn:active { transform: scale(0.94); }
+  @keyframes bob {
+    0%, 100% { transform: translateY(0); }
+    50%      { transform: translateY(-10px); }
+  }
+  .hint {
+    margin-top: 22px;
+    font-size: 14px;
+    color: #c2406a;
+    opacity: 0.85;
+    animation: pulseHint 2s ease-in-out infinite;
+  }
+  @keyframes pulseHint {
+    0%, 100% { opacity: 0.55; }
+    50%      { opacity: 1; }
+  }
+
+ 
+  /* ---------- СЕТКА СЕРДЕЧЕК ---------- */
+  .hearts-grid {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: clamp(6px, 2vw, 14px);
+    width: 100%;
+    max-width: 420px;
+  }
+.hearts-hint {
+  font-size: clamp(20px, 6vw, 26px);
+  font-weight: 700;
+  color: #c2406a;
+  margin-bottom: 18px;
+  letter-spacing: 0.5px;
+  animation: pulseHint 2s ease-in-out infinite;
+}
+  .heart-btn {
+    aspect-ratio: 1 / 1;
+    border: none;
+    border-radius: 20px;
+    background: rgba(255,255,255,0.6);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    font-size: clamp(24px, 7vw, 36px);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 6px 14px rgba(200, 80, 130, 0.15);
+    transition: transform 0.18s ease, background 0.2s ease;
+    animation: popIn 0.5s cubic-bezier(.34,1.56,.64,1) both;
+  }
+  .heart-btn:active {
+    transform: scale(0.88);
+    background: rgba(255, 255, 255, 0.95);
+  }
+
+  /* всплывающее милое сообщение */
+  .toast {
+    position: fixed;
+    left: 50%;
+    bottom: 30px;
+    transform: translate(-50%, 130%);
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    color: #c2406a;
+    font-weight: 700;
+    font-size: clamp(15px, 4.2vw, 18px);
+    padding: 18px 26px;
+    border-radius: 22px;
+    box-shadow: 0 16px 40px rgba(200, 80, 130, 0.35);
+    max-width: 88vw;
+    text-align: center;
+    z-index: 100;
+    opacity: 0;
+    transition: transform 0.5s cubic-bezier(.34,1.56,.64,1), opacity 0.4s ease;
+    pointer-events: none;
+  }
+  .toast.show {
+    transform: translate(-50%, 0);
+    opacity: 1;
+  }
+
+  /* ---------- ОБЩЕЕ ---------- */
+  @keyframes popIn {
+    0%   { opacity: 0; transform: scale(0.85) translateY(10px); }
+    100% { opacity: 1; transform: scale(1) translateY(0); }
+  }
+
+  .big-emoji { font-size: clamp(46px, 14vw, 70px); }
+</style>
+</head>
+<body>
+
+<!-- Фоновые сердечки (создаются скриптом) -->
+
+<!-- ================= ЭКРАН 1: старт ================= -->
+<section class="screen active" id="screen-start">
+  <h1 class="dialog-title">привет, сладкая</h1>
+  <div class="dialog-box">
+    <p class="dialog-text">1. и чо дальше<br>2. приветик</p>
+    <button class="btn-choice" onclick="showRed('а ничо нахуй')">1. и чо дальше</button>
+    <button class="btn-choice" onclick="goTo('screen-question')">2. приветик</button>
+  </div>
+</section>
+
+<!-- ================= ЭКРАН 2: вопрос ================= -->
+<section class="screen" id="screen-question">
+  <h1 class="dialog-title">как я тебя чаще всего называю?</h1>
+  <div class="dialog-box">
+    <input type="text" class="answer-input" id="nameInput"
+           placeholder="напиши тут..." autocomplete="off">
+    <button class="btn-choice" onclick="checkAnswer()">ответить</button>
+  </div>
+</section>
+
+<!-- ================= ЭКРАН 3: цветочек ================= -->
+<section class="screen" id="screen-flower">
+  <button class="flower-btn" onclick="goTo('screen-hearts')">
+    <img src="https://i.pinimg.com/originals/3f/7f/2a/3f7f2aa011b26c504f79e28c44d9ee96.png?nii=t"
+         alt="цветочки">
+  </button>
+  <p class="hint">нажми на цветочки ♥</p>
+</section>
+
+<!-- ================= ЭКРАН 5: 10 сердечек ================= -->
+<section class="screen" id="screen-hearts">
+  <p class="hearts-hint">Жми</p>   <!-- ← вот эта строка -->
+  <div class="hearts-grid" id="heartsGrid"></div>
+</section>
+
+<!-- ================= КРАСНЫЙ ЭКРАН ================= -->
+<div class="red-screen" id="redScreen">
+  <div class="msg" id="redMsg">а ничо нахуй</div>
+  <div class="broken-heart" id="brokenHeart">💔</div>
+  <button class="btn-back" id="redBack" onclick="backFromRed()">назад</button>
+</div>
+
+<!-- ================= ВСПЛЫВАЮЩЕЕ СООБЩЕНИЕ ================= -->
+<div class="toast" id="toast"></div>
+
+<script>
+/* ============================================================
+   Навигация между экранами с плавным перекрёстным переходом
+   ============================================================ */
+let currentScreen = 'screen-start';
+
+function goTo(id) {
+  if (id === currentScreen) return;
+  const from = document.getElementById(currentScreen);
+  const to   = document.getElementById(id);
+
+  from.classList.add('leaving');
+  setTimeout(() => {
+    from.classList.remove('active');
+    from.classList.remove('leaving');
+  }, 550);
+
+  requestAnimationFrame(() => {
+    to.classList.add('active');
+  });
+
+  currentScreen = id;
+}
+
+/* ============================================================
+   Красный экран
+   ============================================================ */
+function showRed(text, withBrokenHeart = false) {
+  const red  = document.getElementById('redScreen');
+  const msg  = document.getElementById('redMsg');
+  const heart = document.getElementById('brokenHeart');
+  const back = document.getElementById('redBack');
+
+  msg.textContent = text;
+  heart.classList.toggle('show', withBrokenHeart);
+  back.classList.remove('show');
+
+  red.classList.add('active');
+
+  if (withBrokenHeart) {
+    setTimeout(() => back.classList.add('show'), 900);
+  } else {
+    setTimeout(() => back.classList.add('show'), 400);
+  }
+}
+
+function backFromRed() {
+  const red = document.getElementById('redScreen');
+  red.classList.remove('active');
+
+  setTimeout(() => {
+    document.getElementById('brokenHeart').classList.remove('show');
+    document.getElementById('redBack').classList.remove('show');
+    document.getElementById('redMsg').style.animation = 'none';
+    void document.getElementById('redMsg').offsetWidth;
+    document.getElementById('redMsg').style.animation = '';
+  }, 500);
+}
+
+/* ============================================================
+   Проверка ответа
+   ============================================================ */
+function checkAnswer() {
+  const input = document.getElementById('nameInput');
+  const val = input.value.trim().toLowerCase();
+  const clean = val.replace(/[^а-яёa-z]/gi, '');
+
+  const good = ['сладкая', 'сладенькая'];
+
+  if (good.includes(clean)) {
+    goTo('screen-flower');
+  } else {
+    showRed('не угадала', true);
+  }
+}
+
+document.getElementById('nameInput').addEventListener('keydown', (e) => {
+  if (e.key === 'Enter') checkAnswer();
+});
+
+/* ============================================================
+   10 сердечек-кнопок
+   ============================================================ */
+const heartEmojis = ['❤️','💖','💗','💕','💞','💓','💘','💝','🩷','💌'];
+
+const phrases = [
+  'Твоя улыбка - 8 чудо света🌸',
+  'С тобой даже обычный день — праздник ✨',
+  'Ты делаешь мир вокруг теплее ☀️',
+  'Каждый раз, когда смотрю на тебя и влюбляюсь влюбляюсь еще сильнее 🥰',
+  'Ты — моя самая любимая привычка 🍬',
+  'Обнимать тебя — лучше всего 🤗',
+  'Ты красивее любого заката 🌅',
+  'Спасибо, что ты рядом 💫',
+  'Ты — моё самое тёплое место на земле 🏡',
+  'Ты лучшее, что со мной случалось. Спасибо тебе за то, что ты есть, любимая Дашенька! 💍'
+];
+
+(function buildHearts() {
+  const grid = document.getElementById('heartsGrid');
+  heartEmojis.forEach((emoji, i) => {
+    const btn = document.createElement('button');
+    btn.className = 'heart-btn';
+    btn.textContent = emoji;
+    btn.style.animationDelay = (i * 0.06) + 's';
+
+    btn.addEventListener('click', () => {
+      btn.animate(
+        [{ transform: 'scale(1)' }, { transform: 'scale(1.35)' }, { transform: 'scale(1)' }],
+        { duration: 380, easing: 'cubic-bezier(.34,1.56,.64,1)' }
+      );
+      showToast(phrases[i]);
+    });
+
+    grid.appendChild(btn);
+  });
+})();
+
+let toastTimer;
+function showToast(text) {
+  const toast = document.getElementById('toast');
+  toast.textContent = text;
+  toast.classList.add('show');
+
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => {
+    toast.classList.remove('show');
+  }, 4200);
+}
+
+/* ============================================================
+   Фоновые плавающие сердечки
+   ============================================================ */
+(function spawnBgHearts() {
+  const hearts = ['💗','💖','🩷','🌸','✨'];
+  const count = 16;
+
+  for (let i = 0; i < count; i++) {
+    const el = document.createElement('div');
+    el.className = 'bg-heart';
+    el.textContent = hearts[Math.floor(Math.random() * hearts.length)];
+    el.style.left = Math.random() * 100 + 'vw';
+    el.style.fontSize = (14 + Math.random() * 20) + 'px';
+    el.style.animationDuration = (10 + Math.random() * 12) + 's';
+    el.style.animationDelay = (-Math.random() * 15) + 's';
+    document.body.appendChild(el);
+  }
+})();
+</script>
+</body>
+</html>
